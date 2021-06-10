@@ -88,6 +88,9 @@ class Matrix:
     def get_value(self, x, y):
         return self.mat[y, x]
 
+    def get_matrix(self):
+        return self.mat
+
 #     def get_row(self, row):
 #         return Matrix(self.m, 1, [self.values[self.m*row+i] for i in range(self.m)])
 

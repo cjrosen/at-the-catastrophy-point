@@ -1,6 +1,8 @@
-# import cubes
+from cubes import MohrCube
 import svg
-from vector import Vector
+from vector import Vec2, Vec3
+
+from graphics import *
 
 
 class MohrSvg:
@@ -10,42 +12,105 @@ class MohrSvg:
         self.width = width
         self.height = height
 
-        self.center = Vector(self.width, self.height) * 0.5
+        self.center = Vec2(self.width, self.height) * 0.5
 
         self.cube_size = self.width * 0.1
-        self.c1_center = self.center - Vector(self.cube_size * 1.2, 0)
+        self.c1_center = self.center - Vec2(self.cube_size * 1.4, 0)
+        self.c2_center = self.center + Vec2(self.cube_size * 1.4, 0)
 
-    def draw(self, frame):
+        self.cube = MohrCube()
+
+    def draw_svg(self, frame):
 
         s = svg.SVG()
 
         s.create(self.width, self.height)
         color = "black"
-        line_width = 2
+        line_width = 4
 
-        s.line(color, line_width,
-               self.c1_center.x - self.cube_size, self.c1_center.y - self.cube_size,
-               self.c1_center.x - self.cube_size, self.c1_center.y + self.cube_size)
+        self.cube.set_frame(frame)
+        scale = self.cube_size / 2
+        #v0, v1 = self.cube.get_line(0)
+        #print(v0)
+        pattern = self.cube.get_pattern()
+        print(pattern)
+        if pattern is None:
+            pattern = [False] * 12
+        for i in range(0, 12):
+            center = self.c2_center if pattern[i] else self.c1_center
+            v0, v1 = self.cube.get_line(i)
+            s.line(color, line_width,
+                center.x + scale * v0.x, center.y + scale * v0.y,
+                center.x + scale * v1.x, center.y + scale * v1.y)
 
-        # s.text(32, 16, "sans-serif", 16, "#000000", "#000000", "codedrome.com")
+        s.text(32, 16, "monospace", 12, "#000000", None, f"Frame: {frame}")
 
         s.finalize()
 
         try:
-            s.save(f"mohr_{frame:04}.svg")
+            # s.save(f"mohr_{frame:04}.svg")
+            s.save(f"data/mohr_test.svg")
         except IOError as ioe:
             print(ioe)
 
         print(s)
 
+    def draw_animation(self, win):
 
-def test():
-    scale = 0.25
-    mohr = MohrSvg(2360*scale, 2596*scale)
-    mohr.draw(512)
+        scale = self.cube_size / 2
+        pattern = self.cube.get_pattern()
+        print(pattern)
+        if pattern is None:
+            pattern = [False] * 12
+        for i in range(0, 12):
+            center = self.c2_center if pattern[i] else self.c1_center
+            v0, v1 = self.cube.get_line(i)
+            line = Line(
+                Point(center.x + scale * v0.x, center.y - scale * v0.y),
+                Point(center.x + scale * v1.x, center.y - scale * v1.y)
+            )
+            line.setWidth(2)
+            line.draw(win) # draw it to the window
+        return
+
+
+    def test(self):
+        self.draw_svg(7176)
+
+        frame = 518
+
+        win = GraphWin(width = self.width, height = self.height) # create a window
+        win.setCoords(0, self.height, self.width, 0) # set the coordinates of the window
+        while True:
+            self.cube.set_frame(frame)
+
+            clear = Rectangle(Point(0, 0), Point(self.width, self.height))
+            clear.setFill("white")
+            clear.draw(win)
+
+            text = Text(Point(120,20), f"Frame: {self.cube.frame}\nSegment: {self.cube.segment}")
+            text.draw(win)
+
+            self.draw_animation(win)
+
+            key = win.getKey()
+            if key == 'Right':
+                frame += 1
+            elif key == 'Up':
+                frame += 8
+            elif key == 'Left':
+                frame -= 1
+            elif key == 'Down':
+                frame -= 8
+            else:
+                win.close()
+                break
+
 
 
 if __name__ == "__main__":
     print("Test mohr")
-    test()
+    scale = 0.1
+    mohr = MohrSvg(2360*scale, 2596*scale)
+    mohr.test()
 
