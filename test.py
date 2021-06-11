@@ -29,21 +29,25 @@ class MohrSvg:
         line_width = 4
 
         self.cube.set_frame(frame)
-        scale = self.cube_size / 2
+        scale = self.cube_size
         #v0, v1 = self.cube.get_line(0)
         #print(v0)
         pattern = self.cube.get_pattern()
         print(pattern)
         if pattern is None:
             pattern = [False] * 12
+        s.new_group()
         for i in range(0, 12):
             center = self.c2_center if pattern[i] else self.c1_center
             v0, v1 = self.cube.get_line(i)
-            s.line(color, line_width,
+            s.line(
                 center.x + scale * v0.x, center.y + scale * v0.y,
-                center.x + scale * v1.x, center.y + scale * v1.y)
+                center.x + scale * v1.x, center.y + scale * v1.y,
+                color, line_width, linecap='round')
+        s.end_group()
 
-        s.text(32, 16, "monospace", 12, "#000000", None, f"Frame: {frame}")
+        s.add_font('monospaced_font', 'Alte Haas Grotesk', 12, 'bold', 'normal', '#000000', 'None')
+        s.text(32, 16, f"Frame: {frame}", 'monospaced_font')
 
         s.finalize()
 
@@ -75,8 +79,8 @@ class MohrSvg:
 
 
     def test(self):
-        self.draw_svg(7176)
-
+        self.draw_svg(583)
+        return
         frame = 518
 
         win = GraphWin(width = self.width, height = self.height) # create a window
