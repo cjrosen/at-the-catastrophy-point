@@ -168,7 +168,7 @@ class SVG(object):
 
         self.__add_to_svg(self.templates["line"].format(self.__get_indentation(), stroke, strokewidth, y2, x2, y1, x1, linecap))
 
-    def rectangle(self, width, height, x, y, fill, stroke, strokewidth, radiusx, radiusy):
+    def rectangle(self, x, y, width, height, fill, stroke, strokewidth, radiusx, radiusy):
 
         """
         Adds a rectangle using the method's arguments.

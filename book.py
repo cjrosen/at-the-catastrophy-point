@@ -1,4 +1,5 @@
 import math
+from svg import SVG
 
 class Book(object):
 
@@ -30,6 +31,9 @@ class Book(object):
                 'bottom': self.__px(margins_mm[3]),
             },
             'header': {
+                'height': self.__px(15)
+            },
+            'footer': {
                 'height': self.__px(15)
             }
         }
@@ -64,11 +68,70 @@ class Book(object):
         i = self.page_count_offset + number -1
         return self.pages[i]
 
+    def __get_number(self, i):
+        if i >= len(self.pages):
+            return '   '
+        return f"{self.pages[i].number:03}" if self.pages[i].number > 0 else '  x'
+
     def __str__(self) -> str:
         out = f"Book of size {self.width_mm}mm x {self.height_mm}mm @ {self.dpi} dpi"
-        out += f"\n  {len(self.pages)} pages: {[p.number if p.number > 0 else 'x' for p in self.pages]}"
+        out += f"\n  {len(self.pages)} pages:\n  [" #{[p.number if p.number > 0 else 'x' for p in self.pages]}"
+        i = 0
+        if self.pages[i].is_right:
+            out += f"\n    [     | {self.__get_number(i)} ]"
+            i += 1
+        while i < len(self.pages):
+            out += f"\n    [ {self.__get_number(i)} | {self.__get_number(i+1)} ]"
+            i += 2
+        out += f"\n  ]"
         out += f"\n  {len(self.page_templates)} page templates"
         return out
+
+    def render_template(self, id):
+        t = self.get_page_template(id)
+        if t is None:
+            print(f"ERROR: Page template with id '{id}' does not exist.")
+            return
+        s = SVG()
+        s.create(self.width_px, self.height_px)
+        fill = '#DDDDDD'
+        stroke = '#000000'
+        stroke_width = 2
+        # self.content = {
+        #     'x': page_template['margins']['inner' if self.is_right else 'outer'],
+        #     'y': page_template['margins']['top'],
+        #     'w': book.width_px - page_template['margins']['inner'] - page_template['margins']['outer'],
+        #     'h': book.height_px - page_template['margins']['bottom'] - page_template['margins']['top'],
+        # }
+
+        s.rectangle(0, 0, self.width_px, self.height_px, fill, None, stroke_width, 0, 0)
+        s.rectangle(
+            t['margins']['inner'],
+            t['margins']['top'] - t['header']['height'],
+            self.width_px - t['margins']['inner'] - t['margins']['outer'],
+            t['header']['height'],
+            fill, stroke, stroke_width, 0, 0)
+        s.rectangle(
+            t['margins']['inner'],
+            self.height_px - t['margins']['bottom'],
+            self.width_px - t['margins']['inner'] - t['margins']['outer'],
+            t['footer']['height'],
+            fill, stroke, stroke_width, 0, 0)
+        s.rectangle(
+            t['margins']['inner'],
+            t['margins']['top'],
+            self.width_px - t['margins']['inner'] - t['margins']['outer'],
+            self.height_px - t['margins']['top'] - t['margins']['bottom'],
+            fill, stroke, stroke_width, 0, 0)
+        s.finalize()
+
+        try:
+            filename = f"data/template_{id}.svg"
+            print(f"Save template rendering to {filename}")
+            s.save(filename)
+        except IOError as ioe:
+            print(ioe)
+
     
 class BookPage(object):
 
@@ -81,15 +144,22 @@ class BookPage(object):
         page_template = book.get_page_template(template)
         self.header = {
             'x': page_template['margins']['inner' if self.is_right else 'outer'],
-            'y': page_template['margins']['top'],
-            'w': book.width_mm - page_template['margins']['inner'] - page_template['margins']['outer'],
+            'y': page_template['margins']['top'] - page_template['header']['height'],
+            'w': book.width_px - page_template['margins']['inner'] - page_template['margins']['outer'],
             'h': page_template['header']['height']
+        },
+        self.footer = {
+            'x': page_template['margins']['inner' if self.is_right else 'outer'],
+            'y': book.height_px - page_template['margins']['bottom'],
+            'w': book.width_px - page_template['margins']['inner'] - page_template['margins']['outer'],
+            'h': page_template['footer']['height']
+        },
+        self.content = {
+            'x': page_template['margins']['inner' if self.is_right else 'outer'],
+            'y': page_template['margins']['top'],
+            'w': book.width_px - page_template['margins']['inner'] - page_template['margins']['outer'],
+            'h': book.height_px - page_template['margins']['bottom'] - page_template['margins']['top'],
         }
-        # self.svg_content = {
-        #     'header': "",
-        #     'body': "",
-        #     'footer': ""
-        # }
 
 
 class Helpers(object):
@@ -122,4 +192,5 @@ if __name__ == '__main__':
     book.add_page()
     book.add_page(number=-1)
     print(book)
+    book.render_template('default')
     #print([Helpers.to_roman(i) for i in range(25)])
