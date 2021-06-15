@@ -1,14 +1,15 @@
 
 class SVGFont(object):
 
-    def __init__(self, id, family, size = 12):
+    def __init__(self, id, family, size, line_height = 1.2):
         self.id = id
         self.family = family
         self.size = size
         self.weight = 'normal'
         self.style = 'normal'
-        self.stroke = 'None'
-        self.fill = '#000000'
+        self.stroke = None
+        self.color = '#000000'
+        self.line_height = line_height
 
     def italic(self, enabled = True):
         self.style = 'italic'
@@ -19,7 +20,7 @@ class SVGFont(object):
         return self
 
     def color(self, color):
-        self.fill = color
+        self.color = color
         return self
 
 
@@ -75,9 +76,13 @@ class SVG(object):
         templates["svg_begin"] = "{}<svg width='{}px' height='{}px' xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink'>\n"
         templates["svg_end"] = "{}</svg>\n"
         templates["circle"] = "{}<circle stroke='{}' stroke-width='{}px' fill='{}' r='{}' cy='{}' cx='{}' />\n"
-        templates["line"] = "{}<line stroke='{}' stroke-width='{}px' y2='{}' x2='{}' y1='{}' x1='{}' stroke-linecap='{}'/>\n"
+        templates["line"] = "{}<line x1='{}' y1='{}' x2='{}' y2='{}' stroke='{}' stroke-width='{}px' stroke-linecap='{}' stroke-dasharray='{}'/>\n"
         templates["rectangle"] = "{}<rect fill='{}' stroke='{}' stroke-width='{}px' width='{}' height='{}' y='{}' x='{}' ry='{}' rx='{}' />\n"
         templates["text"] = "{}<text x='{}' y = '{}' font-family='{}' font-weight='{}' font-style='{}' stroke='{}' fill='{}' font-size='{}px'>{}</text>\n"
+        templates["text_box"] = "\
+{indent}<foreignObject x='{x}' y='{y}' width='{width}' height='{height}' style='font-family: {font_family}; font-size: {font_size}px; font-color: {font_color}; line-height: {line_height}px;'>\n\
+{indent}  <p xmlns='http://www.w3.org/1999/xhtml'>{text}</p>\n\
+{indent}</foreignObject>"
         templates["ellipse"] = "{}<ellipse cx='{}' cy='{}' rx='{}' ry='{}' fill='{}' stroke='{}' stroke-width='{}' />\n"
         templates["group_begin"] = "{}<g>\n"
         templates["group_end"] = "{}</g>\n"
@@ -137,10 +142,10 @@ class SVG(object):
     def __get_font(self, font_id):
         return next((font for font in self.fonts if font.id == font_id), None)
 
-    def add_font(self, id, fontfamily, fontsize, weight, style, fill = '#000000', stroke = 'None'):
-        font = SVGFont(id, fontfamily, fontsize)
+    def add_font(self, id, fontfamily, fontsize, line_height = 1.2, weight = 'normal', style = 'normal', color = '#000000', stroke = 'None'):
+        font = SVGFont(id, fontfamily, fontsize, line_height)
         print(type(font))
-        font.fill = fill
+        font.color = color
         font.weight = weight
         font.style = style
         font.stroke = stroke
@@ -160,13 +165,13 @@ class SVG(object):
 
         self.__add_to_svg(self.templates["circle"].format(self.__get_indentation(), stroke, strokewidth, fill, r, cy, cx))
 
-    def line(self, x1, y1, x2, y2, stroke, strokewidth, linecap = 'round'):
+    def line(self, x1, y1, x2, y2, stroke, strokewidth, dashes = 'None', linecap = 'round'):
 
         """
         Adds a line using the method's arguments.
         """
 
-        self.__add_to_svg(self.templates["line"].format(self.__get_indentation(), stroke, strokewidth, y2, x2, y1, x1, linecap))
+        self.__add_to_svg(self.templates["line"].format(self.__get_indentation(), x1, y1, x2, y2, stroke, strokewidth, linecap, dashes))
 
     def rectangle(self, x, y, width, height, fill, stroke, strokewidth, radiusx, radiusy):
 
@@ -184,13 +189,20 @@ class SVG(object):
 
         self.rectangle(self.width, self.height, 0, 0, Fill, Fill, 0, 0, 0)
 
-    # def text(self, x, y, text, fontfamily, fontsize, weight, style, fill, stroke):
+    def text_box(self, x, y, width, height, text, font_id):
 
-    #     """
-    #     Adds text using the method's arguments.
-    #     """
+        """
+        Adds text using the method's arguments.
+        """
 
-    #     self.__add_to_svg(self.templates["text"].format(self.__get_indentation(), x, y, fontfamily, weight, style, stroke, fill, fontsize, text))
+        font = self.__get_font(font_id)
+        if font is not None:
+            self.__add_to_svg(self.templates["text_box"].format(
+                indent = self.__get_indentation(), 
+                x = x, y = y, width = width, height = height, 
+                font_family = font.family, font_size = font.size, font_color = font.color, line_height = font.line_height, 
+                text = text))
+                # font.weight, font.style, font.stroke, font.fill,
 
     def text(self, x, y, text, font_id):
 
@@ -199,7 +211,7 @@ class SVG(object):
         """
         font = self.__get_font(font_id)
         if font is not None:
-            self.__add_to_svg(self.templates["text"].format(self.__get_indentation(), x, y, font.family, font.weight, font.style, font.stroke, font.fill, font.size, text))
+            self.__add_to_svg(self.templates["text"].format(self.__get_indentation(), x, y, font.family, font.weight, font.style, font.stroke, font.color, font.size, text))
 
     def ellipse(self, cx, cy, rx, ry, fill, stroke, strokewidth):
 
