@@ -6,6 +6,19 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0],'..'))
 from svg import SVG
 
+
+class SvgPage(BookPage):
+
+    def __init__(self, template_id, data, func):
+        super().__init__(template_id)
+        self.data = data
+        self.func = func
+
+    def render(self, svg):
+        self.func(svg, self, self.book, self.data)
+        return
+
+
 class SvgRenderer(object):
 
     def render_template(self, book: Book, id):
@@ -75,7 +88,8 @@ class SvgRenderer(object):
         except IOError as ioe:
             print(ioe)
 
-    def render_page(self, page: BookPage, render_meta = False):
+
+    def render_page(self, page: SvgPage, output_path, render_meta = False):
         s = SVG()
         book = page.book
 
@@ -102,14 +116,17 @@ class SvgRenderer(object):
             s.end_group()
         # s.text_box(page.content['x'], page.content['y'], page.content['w'], page.content['h'],
         #     ' '.join(["mkgÅjl"] * 100), 'default')
-        s.text_box(page.content['x'], page.content['y'], page.content['w'], page.content['h'],
-            "En lång rackarns text, som strävar så ivrigt efter högerkanten att den förlorar fästet och, på grund av bredden, landar till vänster.", 'default')
+        #s.text_box(page.content['x'], page.content['y'], page.content['w'], page.content['h'],
+        #    "En lång rackarns text, som strävar så ivrigt efter högerkanten att den förlorar fästet och, på grund av bredden, landar till vänster.", 'default')
         #s.text(0, 0, "Hello World", 'default')
+
+        print(f"Try rende page of type: {type(page)}")
+        page.render(s)
 
         s.finalize()
 
         try:
-            filename = f"../output/page_{page.number}.svg"
+            filename = f"{output_path}/page_{page.number}.svg"
             print(f"Save template rendering to {filename}")
             s.save(filename)
         except IOError as ioe:
@@ -117,24 +134,26 @@ class SvgRenderer(object):
 
 
 if __name__ == '__main__':
-    from book import BookPage, TestPage
+
+    def test_page(svg, page, book, data):
+        svg.text(page.x_content(0), page.y_content(100), data['text'], 'default')
+        svg.text_box(page.x_content(0), page.y_content(100), book.px(64), book.px(48), data['text'], 'default')
+        svg.image(page.x_content(0), page.y_content(0), book.px(64), book.px(48), "original_frames/frame_0000.jpg")
+
+    from book import BookPage
 
     book = Book(200, 220, 300)
     book.page_count_offset = 0
     book.add_page(BookPage('default'))
     book.add_page(BookPage('default'), number=-1)
-    book.add_page(TestPage('default', "En liten text.", lambda text, book: {
-        
-    }), number=-1)
+    book.add_page(SvgPage('default', {
+            'text': "En liten text."
+        }, test_page), number=None)
     book.update()
     print(book)
     renderer = SvgRenderer()
     renderer.render_template(book, 'default')
-    page = book.get_page(0)
-    renderer.render_page(page, True)
+    page = book.get_page(3)
+    print(type(page))
+    renderer.render_page(page, 'output', True)
     #book.render_page(0)
-
-    f = lambda text: {
-        print(text)
-    }
-    f("text test")

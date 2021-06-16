@@ -110,6 +110,15 @@ class BookPage(object):
         self.footer = None
         self.content = None
 
+    def x_content(self, x_mm):
+        if x_mm >= 0:
+            return self.content['x'] + self.book.px(x_mm)
+        return self.content['x'] + self.content['w'] + self.book.px(x_mm)
+    def y_content(self, y_mm):
+        if y_mm >= 0:
+            return self.content['y'] + self.book.px(y_mm)
+        return self.content['y'] + self.content['h'] + self.book.px(y_mm)
+
     def update(self):
         page_template = self.book.get_page_template(self.template_id)
         self.header = {
@@ -133,27 +142,13 @@ class BookPage(object):
     
     def render(self):
         return
-
-class TestPage(BookPage):
-
-    def __init__(self, template_id, text, func):
-        super().__init__(template_id)
-        self.text = text
-        self.func = func
-
-    def render(self):
-        self.func(self.text, self.content)
-        return
-
+        
 
 if __name__ == '__main__':
     book = Book(200, 220, 300)
     book.page_count_offset = 0
     book.add_page(BookPage('default'))
     book.add_page(BookPage('default'), number=-1)
-    book.add_page(TestPage('default', "En liten text.", lambda text, book: {
-        
-    }), number=-1)
     book.update()
     print(book)
     #book.render_template('default')

@@ -1,1 +1,4 @@
 numpy
+svglib
+python-opencv
+reportlab

@@ -80,10 +80,11 @@ class SVG(object):
         templates["rectangle"] = "{}<rect fill='{}' stroke='{}' stroke-width='{}px' width='{}' height='{}' y='{}' x='{}' ry='{}' rx='{}' />\n"
         templates["text"] = "{}<text x='{}' y = '{}' font-family='{}' font-weight='{}' font-style='{}' stroke='{}' fill='{}' font-size='{}px'>{}</text>\n"
         templates["text_box"] = "\
-{indent}<foreignObject x='{x}' y='{y}' width='{width}' height='{height}' style='font-family: {font_family}; font-size: {font_size}px; font-color: {font_color}; line-height: {line_height}px;'>\n\
+{indent}<foreignObject x='{x}' y='{y}' width='{width}px' height='{height}px' style='font-family: {font_family}; font-size: {font_size}px; font-color: {font_color}; line-height: {line_height}px;'>\n\
 {indent}  <p xmlns='http://www.w3.org/1999/xhtml'>{text}</p>\n\
-{indent}</foreignObject>"
+{indent}</foreignObject>\n"
         templates["ellipse"] = "{}<ellipse cx='{}' cy='{}' rx='{}' ry='{}' fill='{}' stroke='{}' stroke-width='{}' />\n"
+        templates["image"] = "{indent}<image x='{x}' y='{y}' width='{width}px' height='{height}px' href='{href}'/>\n"
         templates["group_begin"] = "{}<g>\n"
         templates["group_end"] = "{}</g>\n"
 
@@ -221,6 +222,12 @@ class SVG(object):
 
         self.__add_to_svg(self.templates["ellipse"].format(self.__get_indentation(), cx, cy, rx, ry, fill, stroke, strokewidth))
 
+    def image(self, x, y, width, height, path):
+        
+        self.__add_to_svg(self.templates["image"].format(
+            indent = self.__get_indentation(), 
+            x = x, y = y, width = width, height = height,
+            href = path))
 
     """
     Output stuff

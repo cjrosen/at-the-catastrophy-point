@@ -1,8 +1,12 @@
 from cubes import MohrCube
-import svg
 from vector import Vec2, Vec3
 
-from graphics import *
+import graphics
+
+# use syspath because module is in parent dir...
+import sys, os
+sys.path.append(os.path.join(sys.path[0],'..'))
+from svg import SVG
 
 
 class MohrSvg:
@@ -22,7 +26,7 @@ class MohrSvg:
 
     def draw_svg(self, frame):
 
-        s = svg.SVG()
+        s = SVG()
 
         s.create(self.width, self.height)
         color = "black"
