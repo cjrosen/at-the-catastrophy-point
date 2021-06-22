@@ -32,18 +32,18 @@ class MohrSvg:
         color = "black"
         line_width = 4
 
-        self.cube.set_frame(frame)
+        self.cube.setFrame(frame)
         scale = self.cube_size
         #v0, v1 = self.cube.get_line(0)
         #print(v0)
-        pattern = self.cube.get_pattern()
+        pattern = self.cube.getPattern()
         print(pattern)
         if pattern is None:
             pattern = [False] * 12
         s.new_group()
         for i in range(0, 12):
             center = self.c2_center if pattern[i] else self.c1_center
-            v0, v1 = self.cube.get_line(i)
+            v0, v1 = self.cube.getLine(i)
             s.line(
                 center.x + scale * v0.x, center.y + scale * v0.y,
                 center.x + scale * v1.x, center.y + scale * v1.y,
@@ -57,7 +57,7 @@ class MohrSvg:
 
         try:
             # s.save(f"mohr_{frame:04}.svg")
-            s.save(f"data/mohr_test.svg")
+            s.save(f"output/mohr_test.svg")
         except IOError as ioe:
             print(ioe)
 
@@ -66,16 +66,16 @@ class MohrSvg:
     def draw_animation(self, win):
 
         scale = self.cube_size / 2
-        pattern = self.cube.get_pattern()
+        pattern = self.cube.getPattern()
         print(pattern)
         if pattern is None:
             pattern = [False] * 12
         for i in range(0, 12):
             center = self.c2_center if pattern[i] else self.c1_center
-            v0, v1 = self.cube.get_line(i)
-            line = Line(
-                Point(center.x + scale * v0.x, center.y - scale * v0.y),
-                Point(center.x + scale * v1.x, center.y - scale * v1.y)
+            v0, v1 = self.cube.getLine(i)
+            line = graphics.Line(
+                graphics.Point(center.x + scale * v0.x, center.y - scale * v0.y),
+                graphics.Point(center.x + scale * v1.x, center.y - scale * v1.y)
             )
             line.setWidth(2)
             line.draw(win) # draw it to the window
@@ -87,16 +87,16 @@ class MohrSvg:
         return
         frame = 518
 
-        win = GraphWin(width = self.width, height = self.height) # create a window
+        win = graphics.GraphWin(width = self.width, height = self.height) # create a window
         win.setCoords(0, self.height, self.width, 0) # set the coordinates of the window
         while True:
-            self.cube.set_frame(frame)
+            self.cube.setFrame(frame)
 
-            clear = Rectangle(Point(0, 0), Point(self.width, self.height))
+            clear = graphics.Rectangle(graphics.Point(0, 0), graphics.Point(self.width, self.height))
             clear.setFill("white")
             clear.draw(win)
 
-            text = Text(Point(120,20), f"Frame: {self.cube.frame}\nSegment: {self.cube.segment}")
+            text = graphics.Text(graphics.Point(120,20), f"Frame: {self.cube.frame}\nSegment: {self.cube.segment}")
             text.draw(win)
 
             self.draw_animation(win)

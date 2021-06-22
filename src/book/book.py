@@ -13,7 +13,7 @@ class Book(object):
         self.pages = []
         self.page_count_offset = 0
         self.page_templates = []
-        self.add_page_template('default', margins_mm = [20,20,15,15], header_mm = [10, 3], footer_mm = [10, 3])
+        self.addPageTemplate('default', margins_mm = [15,15,15,15], header_mm = [10, 3], footer_mm = [10, 3])
 
     def px(self, mm):
         return mm * self.dpi / 25.4
@@ -21,7 +21,7 @@ class Book(object):
     def mm(self, px):
         return px * 25.4 / self.dpi
 
-    def add_page_template(self, id, margins_mm = [0,0,0,0], header_mm = [0, 0], footer_mm = [0, 0]):
+    def addPageTemplate(self, id, margins_mm = [0,0,0,0], header_mm = [0, 0], footer_mm = [0, 0]):
         template = {
             'id': id,
             'margins': {
@@ -44,15 +44,15 @@ class Book(object):
                 self.page_templates.pop(i)
         self.page_templates.append(template)
 
-    def get_page_template(self, id):
+    def getPageTemplate(self, id):
         return next((t for t in self.page_templates if t['id'] == id), None)
 
-    def __update_page_numbers(self):
+    def __updatePageNumbers(self):
         for i in range(len(self.pages)):
             number = i - self.page_count_offset + 1
             self.pages[i].number = number
 
-    def add_page(self, page, number = None):
+    def addPage(self, page, number = None):
         page.book = self
         if number is None:
             number = len(self.pages) - self.page_count_offset + 1
@@ -63,14 +63,14 @@ class Book(object):
             self.pages.insert(len(self.pages) + i, page)
         else:
             self.pages.insert(i, page)
-        self.__update_page_numbers()
+        self.__updatePageNumbers()
         return page
 
-    def get_page(self, number):
+    def getPage(self, number):
         i = self.page_count_offset + number -1
         return self.pages[i]
 
-    def __get_number(self, i):
+    def __getNumber(self, i):
         if i >= len(self.pages):
             return '   '
         return f"{self.pages[i].number:03}" if self.pages[i].number > 0 else '  x'
@@ -89,10 +89,10 @@ class Book(object):
         out += f"\n  {len(self.pages)} pages:\n  [" #{[p.number if p.number > 0 else 'x' for p in self.pages]}"
         i = 0
         if self.pages[i].is_right:
-            out += f"\n    [     | {self.__get_number(i)} ]"
+            out += f"\n    [     | {self.__getNumber(i)} ]"
             i += 1
         while i < len(self.pages):
-            out += f"\n    [ {self.__get_number(i)} | {self.__get_number(i+1)} ]"
+            out += f"\n    [ {self.__getNumber(i)} | {self.__getNumber(i+1)} ]"
             i += 2
         out += f"\n  ]"
         out += f"\n  {len(self.page_templates)} page templates"
@@ -110,17 +110,17 @@ class BookPage(object):
         self.footer = None
         self.content = None
 
-    def x_content(self, x_mm):
+    def xContent(self, x_mm):
         if x_mm >= 0:
             return self.content['x'] + self.book.px(x_mm)
         return self.content['x'] + self.content['w'] + self.book.px(x_mm)
-    def y_content(self, y_mm):
+    def yContent(self, y_mm):
         if y_mm >= 0:
             return self.content['y'] + self.book.px(y_mm)
         return self.content['y'] + self.content['h'] + self.book.px(y_mm)
 
     def update(self):
-        page_template = self.book.get_page_template(self.template_id)
+        page_template = self.book.getPageTemplate(self.template_id)
         self.header = {
             'x': page_template['margins']['inner' if self.is_right else 'outer'],
             'y': page_template['margins']['top'] - page_template['header']['height'],
@@ -147,8 +147,8 @@ class BookPage(object):
 if __name__ == '__main__':
     book = Book(200, 220, 300)
     book.page_count_offset = 0
-    book.add_page(BookPage('default'))
-    book.add_page(BookPage('default'), number=-1)
+    book.addPage(BookPage('default'))
+    book.addPage(BookPage('default'), number=-1)
     book.update()
     print(book)
     #book.render_template('default')

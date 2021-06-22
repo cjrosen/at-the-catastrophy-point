@@ -22,10 +22,10 @@ class Vec2:
             return self.x * other.x + self.y * other.y
         return Vec2(self.x * other, self.y * other)
 
-    def np_col(self):
+    def npCol(self):
         return np.array([[self.x], [self.y]])
 
-    def np_row(self):
+    def npRow(self):
         return np.array([self.x, self.y])
 
     def __str__(self):
@@ -61,10 +61,10 @@ class Vec3:
             return None
         return Vec3(self.x * other, self.y * other, self.z * other)
 
-    def np_col(self):
+    def npCol(self):
         return np.array([[self.x], [self.y], [self.z]])
 
-    def np_row(self):
+    def npRow(self):
         return np.array([self.x, self.y, self.z])
 
     def __str__(self):
@@ -85,19 +85,19 @@ class Matrix:
     def zeros(cls, rows, cols):
         return cls(np.zeros((rows, cols)))
 
-    def get_value(self, x, y):
+    def getValue(self, x, y):
         return self.mat[y, x]
 
-    def get_matrix(self):
+    def getMatrix(self):
         return self.mat
 
 #     def get_row(self, row):
 #         return Matrix(self.m, 1, [self.values[self.m*row+i] for i in range(self.m)])
 
-    def get_column(self, col):
+    def getColumn(self, col):
         return Matrix(self.mat[:, col])
 
-    def as_vector(self):
+    def asVector(self):
         if (self.rows == 1 and self.cols == 2) or (self.rows == 2 and self.cols == 1):
             mat = self.mat.reshape((1, 2))
             return Vec2(mat[0, 0], mat[0, 1])
@@ -116,10 +116,10 @@ class Matrix:
 
     def __mul__(self, other):
         if isinstance(other, Vec2) and self.cols == 2:
-            return Matrix(self.mat.dot(other.np_col()))
+            return Matrix(self.mat.dot(other.npCol()))
 
         if isinstance(other, Vec3) and self.cols == 3:
-            return Matrix(self.mat.dot(other.np_col()))
+            return Matrix(self.mat.dot(other.npCol()))
 
         if isinstance(other, Matrix):
             return Matrix(self.mat.dot(other.mat))
@@ -195,7 +195,7 @@ def test():
     v1 = Vec2(2, 2)
     m4 = m3.transpose() * v1
     print(f"{m3.transpose()} * {v1} = \n{m4}")
-    print(f"That makes a vector: {m4.as_vector()}")
+    print(f"That makes a vector: {m4.asVector()}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,13 @@ import math
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import Color
 
+import reportlab.rl_config
+reportlab.rl_config.warnOnMissingFontGlyphs = 0
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.graphics import renderPM
+from enum import Enum
+
 class PdfPage(BookPage):
 
     def __init__(self, template_id, data, func):
@@ -11,15 +18,22 @@ class PdfPage(BookPage):
         self.data = data
         self.func = func
 
-    def render(self, svg):
-        self.func(svg, self, self.book, self.data)
-        return
-
+    def render(self, pdf_canvas: canvas.Canvas):
+        if self.func is not None:
+            self.func(pdf_canvas, self, self.book, self.data)
 
 class PdfRenderer(object):
 
-    def render_template(self, book: Book, id):
-        t = book.get_page_template(id)
+    class OutputType(Enum):
+        PDF = 0,
+        TIFF = 1,
+        PNG = 2
+
+    def __init__(self):
+        pass
+
+    def renderTemplate(self, book: Book, id):
+        t = book.getPageTemplate(id)
         if t is None:
             print(f"ERROR: Page template with id '{id}' does not exist.")
             return
@@ -80,50 +94,47 @@ class PdfRenderer(object):
         except IOError as ioe:
             print(ioe)
 
+    def addFont(self, name, file):
+        pdfmetrics.registerFont(TTFont(name, file))
 
-    def render_page(self, page: PdfPage, output_path, render_meta = False):
+    def renderPage(self, page: PdfPage, output_path, outputType: OutputType, render_meta = False):
         
         book = page.book
         filename = f"{output_path}/page_{page.number}.pdf"
-        c = canvas.Canvas(filename, (book.width_px * 2, book.height_px), 0)
+        c = canvas.Canvas(filename, (book.width_px, book.height_px), 0)
 
         # https://github.com/source-foundry/font-line
         
-        font_size = book.px(12) * 0.5
-        line_height = font_size * 1.5
-        line = 0
-        lines = math.floor((page.content['h'] + (line_height - font_size)) / line_height)
-        # s.add_font('default', 'Alte Haas Grotesk', font_size, line_height)
-        # s.create(book.width_px, book.height_px)
-        # fill = '#E5D8C0'
-        strokeColor = Color(0,0,0)
-        metaColor = Color(221,0,0)
-        stroke_width = 2
-
-        c.setStrokeColor(strokeColor)
-        c.setLineWidth(stroke_width)
-        c.rect(0, 0, book.width_px, book.height_px)
         if render_meta:
+            c.setStrokeColor(Color(0,0,0))
+            c.setLineWidth(2)
+            c.rect(0, 0, book.width_px, book.height_px)
+            metaColor = Color(221,0,0)
+            grid_size = book.px(10)
             c.setLineWidth(1)
             c.setStrokeColor(metaColor)
             c.rect(page.content['x'], page.content['y'], page.content['w'], page.content['h'])
             c.setDash(book.px(1), book.px(1))
-            for l in range(lines):
-                y = page.content['y'] - (line_height-font_size) * 0.8 + (l+1) * (line_height - 0.1)
-                #y = page.content['y'] + (l+1) * line_height
+            x = page.content['x'] + grid_size
+            y = page.content['y'] + grid_size
+            while y < page.content['y'] + page.content['h']:
                 c.line(page.content['x'], y, page.content['x'] + page.content['w'], y)
-        # s.text_box(page.content['x'], page.content['y'], page.content['w'], page.content['h'],
-        #     ' '.join(["mkgÅjl"] * 100), 'default')
-        #s.text_box(page.content['x'], page.content['y'], page.content['w'], page.content['h'],
-        #    "En lång rackarns text, som strävar så ivrigt efter högerkanten att den förlorar fästet och, på grund av bredden, landar till vänster.", 'default')
-        #s.text(0, 0, "Hello World", 'default')
+                y += grid_size
+            while x < page.content['x'] + page.content['w']:
+                c.line(x, page.content['y'], x, page.content['y'] + page.content['h'])
+                x += grid_size
 
-        #print(f"Try rende page of type: {type(page)}")
-        #page.render(s)
+        print(f"Try rende page of type: {type(page)}")
+        page.render(c)
 
         try:
-            print(f"Save template rendering to {filename}")
-            c.save()
+            print(f"Save template rendering to {filename}, as {outputType}")
+            if outputType is self.OutputType.PDF:
+                c.save()
+            # elif outputType is OutputType.TIFF:
+            #     renderPM.drawToFile(c, filename, 'TIFF')
+            else:
+                print(f"Unknown output type: {outputType}")
         except IOError as ioe:
             print(ioe)
 
@@ -131,10 +142,10 @@ class PdfRenderer(object):
 if __name__ == '__main__':
     book = Book(200, 220, 72)
     book.page_count_offset = 0
-    book.add_page(BookPage('default'))
-    book.add_page(BookPage('default'), number=-1) 
+    book.addPage(BookPage('default'))
+    book.addPage(BookPage('default'), number=-1) 
 
-    book.add_page(PdfPage('default', {
+    book.addPage(PdfPage('default', {
             'text': "En liten text."
         }, None), number=None)
 
@@ -172,9 +183,9 @@ if __name__ == '__main__':
 
     # template
     r = PdfRenderer()
-    r.render_template(book, 'default')
+    r.renderTemplate(book, 'default')
 
     # page
-    page = book.get_page(3)
+    page = book.getPage(3)
     print(type(page))
-    r.render_page(page, 'output', True)
+    r.renderPage(page, 'output', True)
