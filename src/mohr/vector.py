@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 
 class Vec2:
 
@@ -11,6 +11,23 @@ class Vec2:
         self.x = x
         self.y = y
 
+    def __getitem__(self, key): 
+        if key == 0:
+            return self.x
+        if key == 1:
+            return self.y
+    
+    def __iter__(self):
+        self.__iter_n = 0
+        return self
+
+    def __next__(self):
+        if self.__iter_n < 2:
+            self.__iter_n += 1
+            return self[self.__iter_n-1]
+        else:
+            raise StopIteration
+
     def __add__(self, other):
         return Vec2(self.x + other.x, self.y + other.y)
 
@@ -21,6 +38,15 @@ class Vec2:
         if isinstance(other, Vec2):
             return self.x * other.x + self.y * other.y
         return Vec2(self.x * other, self.y * other)
+
+    def rotateDegrees(self, degrees):
+        return self.rotateRadians(degrees * math.pi / 180.0)
+    
+    def rotateRadians(self, radians):
+        return Vec2(
+            math.cos(radians) * self.x - math.sin(radians) * self.y,
+            math.sin(radians) * self.x + math.cos(radians) * self.y,
+        )
 
     def npCol(self):
         return np.array([[self.x], [self.y]])
@@ -46,6 +72,25 @@ class Vec3:
         self.x = x
         self.y = y
         self.z = z
+
+    def __getitem__(self, key): 
+        if key == 0:
+            return self.x
+        if key == 1:
+            return self.y
+        if key == 2:
+            return self.z
+
+    def __iter__(self):
+        self.__iter_n = 0
+        return self
+
+    def __next__(self):
+        if self.__iter_n < 3:
+            self.__iter_n += 1
+            return self[self.__iter_n-1]
+        else:
+            raise StopIteration
 
     def __add__(self, other):
         return Vec3(self.x + other.x, self.y + other.y, self.z + other.z)

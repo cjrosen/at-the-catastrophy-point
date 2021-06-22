@@ -117,11 +117,11 @@ class PdfRenderer(object):
             c.setDash(book.px(1), book.px(1))
             x = page.content['x'] + grid_size
             y = page.content['y'] + grid_size
-            while y < page.content['y'] + page.content['h']:
-                c.line(page.content['x'], y, page.content['x'] + page.content['w'], y)
+            while y < page.content['y'] + page.content['h'] - 1:
+                c.line(page.content['x'] + 9, y, page.content['x'] + page.content['w'] - 9, y)
                 y += grid_size
-            while x < page.content['x'] + page.content['w']:
-                c.line(x, page.content['y'], x, page.content['y'] + page.content['h'])
+            while x < page.content['x'] + page.content['w'] - 1:
+                c.line(x, page.content['y'] + 9, x, page.content['y'] + page.content['h'] - 9)
                 x += grid_size
 
         print(f"Try rende page of type: {type(page)}")
