@@ -1,4 +1,5 @@
 
+from hashlib import pbkdf2_hmac
 from book import Book, PdfRenderer, PdfPage
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import Color
@@ -7,6 +8,9 @@ from reportlab.lib.colors import Color
 
 from mohr import MohrCube
 from mohr import Vec3, Vec2
+
+import math
+import random
 
 def __clearPen(pdf_canvas: canvas.Canvas):
     pdf_canvas.setStrokeColor(Color(0,0,0))
@@ -28,6 +32,21 @@ def testPage(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
 
     pdf_canvas.drawImage("output/original_frames/frame_0000.jpg", page.xContent(55), page.yContent(100), book.px(64), book.px(48))
     # svg.image(page.x_content(0), page.y_content(0), book.px(64), book.px(48), data['frame'])
+
+def __drawFilledLine(p1: Vec2, p2: Vec2, width, radius, pdf_canvas: canvas.Canvas):
+    if radius * 2 > width:
+        radius = width * 0.5
+    v = p2 - p1
+    right = Vec2(1,0)
+    up = Vec2(0,-1)
+    angle = right.angleDegrees(v) # compared to right
+    angle = -angle if up.dot(v) > 0 else angle
+    pdf_canvas.saveState()
+    pdf_canvas.translate(p1.x, p1.y)
+    pdf_canvas.rotate(angle)
+    pdf_canvas.translate(-radius, 0)
+    pdf_canvas.roundRect(0, -0.5*width, v.length()+2*radius, width, radius, 0, 1)
+    pdf_canvas.restoreState()
 
 def __drawCube(cube: MohrCube, side: MohrCube.Side, center_mm: Vec2, size_mm, pdf_canvas: canvas.Canvas, page: PdfPage, book: Book):
     pattern = cube.getPattern()
@@ -102,24 +121,93 @@ def cubePage003(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
     pdf_canvas.setLineWidth(book.px(0.8))
     w = 17
     h = 17
+    cube.setPattern(3 << 0)
     for y in range(h):
         for x in range(w):
             i = x * w + y
-            cube.setPattern(200 + i*5)
+            #cube.setPattern(200 + i*5)
             # cube.setAngles(0, x * 90.0/(w-1), (y * x) * 90.0/((h-1)*(w-1)))
             # cube.setAngles(0, x * 90.0/(w-1), y * 90.0/(h-1))
             # cube.setAngles(0, x * 90.0/(w-1), (y + x) * 90.0/((h-1)+(w-1)))
-            cube.setAngles(0, (x * y) * 90.0/((w-1)*(h-1)), (x + y) * 90.0/((w-1)+(h-1)))
-            __drawCube(cube, MohrCube.Side.LEFT, Vec2(5+x*10, 5+y*10), 7, pdf_canvas, page, book)
+            #cube.setAngles(0, (x * y) * 90.0/((w-1)*(h-1)), (x + y) * 90.0/((w-1)+(h-1)))
+            cube.setAngles(random.randint(0, 359), random.randint(0, 359), random.randint(0, 359))
+            __drawCube(cube, MohrCube.Side.RIGHT, Vec2(5+x*10, 5+y*10), 4, pdf_canvas, page, book)
+            
+def cubePage004(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
+    __clearPen(pdf_canvas)
+
+    cube = MohrCube()
+
+    # pdf_canvas.setFillColor(Color(0,0,0,0.3))
+    # __drawFilledLine(Vec2(page.xContent(40), page.yContent(40)), Vec2(page.xContent(80), page.yContent(20)), book.px(10), book.px(5), pdf_canvas)
+
+    pdf_canvas.setLineWidth(book.px(2.2))
+    pdf_canvas.setStrokeColor(Color(1,0,0,0.3))
+    pdf_canvas.setFillColor(Color(0,0,0,0.1))
+    cube.setPattern(3 << 0)
+    s = 40
+    for i in range(1000):
+        cube.setAngles(random.randint(0, 359), random.randint(0, 359), random.randint(0, 359))
+        #__drawCube(cube, MohrCube.Side.RIGHT, Vec2(85, 70), 40, pdf_canvas, page, book)
+        #pdf_canvas.rect(page.xContent(85 + random.randint(-50, 50)), page.yContent(70 + random.randint(-50, 50)), book.px(50), book.px(50), 1, 0)
+        p1, p2 =  cube.getLine(0)
+        p1 *= 40
+        p2 *= 40
+        #__drawFilledLine(Vec2(p1.x, p1.y), Vec2(p2.x, p2.y), 4, pdf_canvas)
+        __drawFilledLine(Vec2(page.xContent(85 + p1.x), page.yContent(70 + p1.y)), Vec2(page.xContent(85 + p2.x), page.yContent(70 + p2.y)), book.px(3), book.px(1.5), pdf_canvas)
+
+def cubePage005(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
+    __clearPen(pdf_canvas)
+
+    cube = MohrCube()
+
+    pdf_canvas.setLineWidth(book.px(2.2))
+    pdf_canvas.setStrokeColor(Color(1,0,0,0.3))
+    pdf_canvas.setFillColor(Color(0,0,0,data['alpha']))
+    s = 40
+    # for x in range(0, 1, 5):
+    #     for y in range(0, 2, 1):
+    #         for z in range(0, 90, 1):
+    #             cube.setAngles(random.randint(0, 359), random.randint(0, 359), random.randint(0, 359))
+    #             for l in [0, 1]:
+    #                 p1, p2 =  cube.getLine(l)
+    #                 p1 *= 40
+    #                 p2 *= 40
+    #                 __drawFilledLine(Vec2(page.xContent(85 + p1.x), page.yContent(70 + p1.y)), Vec2(page.xContent(85 + p2.x), page.yContent(70 + p2.y)), book.px(3), book.px(1.5), pdf_canvas)
+
+    v = Vec2(1,0).rotateDegrees(data['angle'])
+    #print(v, (data['frame']['end'] - data['frame']['begin']) * v.y)
+    center = Vec2((book.mm(page.content['w']) - (data['frame']['end'] - data['frame']['begin']) * v.y)/2, 70)
+    #print(center)
+    if data['meta']:
+        pdf_canvas.setLineWidth(10)
+    #     pdf_canvas.rect(page.xContent(40-20), page.yContent(70-20), book.px(40*v.x), book.px(40), 1, 0)
+    for f in range(data['frame']['begin'], data['frame']['end']+1, 1):
+        cube.setFrame(f)
+        pattern = cube.getPattern()
+        for i in range(12):
+            if pattern[i] == data['right']:
+                p1, p2 =  cube.getLine(i)
+                p1 *= 20
+                p2 *= 20
+                p1.x *= v.x
+                p2.x *= v.x
+                ## Rotate on center, creates image like the merge of frames.
+                #__drawFilledLine(Vec2(page.xContent(85 + p1.x), page.yContent(70 + p1.y)), Vec2(page.xContent(85 + p2.x), page.yContent(70 + p2.y)), book.px(3), book.px(1.5), pdf_canvas)
+
+                ## Rotate on moving axis, create x-ray?
+                xo = center.x + v.y*(f-data['frame']['begin'])
+                if data['meta']:
+                    pdf_canvas.line(
+                        page.xContent(center.x + v.y*(f-data['frame']['begin']-1)), page.yContent(center.y),
+                        page.xContent(center.x + v.y*(f-data['frame']['begin'])), page.yContent(center.y))
+                __drawFilledLine(
+                    Vec2(page.xContent(xo + p1.x), page.yContent(center.y + p1.y)),
+                    Vec2(page.xContent(xo + p2.x), page.yContent(center.y + p2.y)),
+                    book.px(3), book.px(1.5), pdf_canvas)
 
 if __name__ == '__main__':
     book = Book(200, 220, 300)
-    
-
-    book.addPage(PdfPage('default', {
-            'frame': '../original_frames/frame_0000.jpg',
-            'text': "En text till olles bok."
-        }, testPage), number=None)
 
     book.addPage(PdfPage('default', {
             'frame': '../original_frames/frame_0000.jpg',
@@ -132,7 +220,46 @@ if __name__ == '__main__':
         }, cubePage001), number=None)
 
     book.addPage(PdfPage('default', {
+        }, cubePage002), number=None)
+
+    book.addPage(PdfPage('default', {
         }, cubePage003), number=None)
+
+    book.addPage(PdfPage('default', {
+        }, cubePage004), number=None)
+
+    book.addPage(PdfPage('default', {
+            'angle': 0,
+            'alpha': 0.01,
+            'right': True,
+            'frame': {
+                'begin': 518,
+                'end': 1200
+            },
+            'meta': False
+        }, cubePage005), number=None)
+
+    book.addPage(PdfPage('default', {
+            'angle': 10,
+            'alpha': 0.1,
+            'right': True,
+            'frame': {
+                'begin': 518,
+                'end': 1100
+            },
+            'meta': True
+        }, cubePage005), number=None)
+
+    book.addPage(PdfPage('default', {
+            'angle': 10,
+            'alpha': 0.015,
+            'right': False,
+            'frame': {
+                'begin': 1100,
+                'end': 1700
+            },
+            'meta': False
+        }, cubePage005), number=None)
 
     book.update()
     print(book)
@@ -140,6 +267,6 @@ if __name__ == '__main__':
     renderer.addFont('AlteHaasGrotesk', 'data/AlteHaasGroteskRegular.ttf')
     #renderer.renderTemplate(book, 'default')
     for page in book.pages:
-        renderer.renderPage(page, 'output/essvik', PdfRenderer.OutputType.PDF, False)
+        renderer.renderPage(page, 'output/essvik', PdfRenderer.OutputType.PDF, True)
 
     print("main done")

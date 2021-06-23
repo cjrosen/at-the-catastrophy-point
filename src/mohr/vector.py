@@ -47,6 +47,12 @@ class Vec2:
             math.cos(radians) * self.x - math.sin(radians) * self.y,
             math.sin(radians) * self.x + math.cos(radians) * self.y,
         )
+    
+    def angleDegrees(self, v):
+        return self.angleRadians(v) * 180 / math.pi
+
+    def angleRadians(self, v):
+        return math.acos( (self.x * v.x + self.y * v.y) / ( self.length() * v.length() ) )
 
     def length(self):
         return math.sqrt(self.x * self.x + self.y * self.y)
@@ -54,6 +60,9 @@ class Vec2:
     def norm(self):
         l = self.length()
         return Vec2(self.x / l, self.y / l)
+
+    def dot(self, v):
+        return self.x * v.x + self.y * v.y
 
     def npCol(self):
         return np.array([[self.x], [self.y]])
