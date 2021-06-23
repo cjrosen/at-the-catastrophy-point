@@ -48,6 +48,13 @@ class Vec2:
             math.sin(radians) * self.x + math.cos(radians) * self.y,
         )
 
+    def length(self):
+        return math.sqrt(self.x * self.x + self.y * self.y)
+
+    def norm(self):
+        l = self.length()
+        return Vec2(self.x / l, self.y / l)
+
     def npCol(self):
         return np.array([[self.x], [self.y]])
 
@@ -105,6 +112,13 @@ class Vec3:
             print("Can't multiply Vec2 with Vec3")
             return None
         return Vec3(self.x * other, self.y * other, self.z * other)
+
+    def length(self):
+        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+    def norm(self):
+        l = self.length()
+        return Vec3(self.x / l, self.y / l, self.z / l)
 
     def npCol(self):
         return np.array([[self.x], [self.y], [self.z]])

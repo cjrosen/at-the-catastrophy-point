@@ -111,13 +111,13 @@ class BookPage(object):
         self.content = None
 
     def xContent(self, x_mm):
-        if x_mm >= 0:
-            return self.content['x'] + self.book.px(x_mm)
-        return self.content['x'] + self.content['w'] + self.book.px(x_mm)
+        #if x_mm >= 0:
+        return self.content['x'] + self.book.px(x_mm)
+        #return self.content['x'] + self.content['w'] + self.book.px(x_mm)
     def yContent(self, y_mm):
-        if y_mm >= 0:
-            return self.content['y'] + self.book.px(y_mm)
-        return self.content['y'] + self.content['h'] + self.book.px(y_mm)
+        #if y_mm >= 0:
+        return self.content['y'] + self.book.px(y_mm)
+        #return self.content['y'] + self.content['h'] + self.book.px(y_mm)
 
     def update(self):
         page_template = self.book.getPageTemplate(self.template_id)

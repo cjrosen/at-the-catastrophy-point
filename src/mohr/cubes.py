@@ -1,9 +1,16 @@
 import math
 import numpy as np
 from .vector import Vec3, Matrix
+from enum import Enum
 
 
 class MohrCube(object):
+
+    class Side(Enum):
+        NONE = 0,
+        LEFT = 1,
+        RIGHT = 2,
+        BOTH = 3
 
     def __init__(self):
         self.__corners_base = Matrix(np.array([
@@ -43,10 +50,10 @@ class MohrCube(object):
         self.segment = self.__segmentForFrame(frame)
         angles = self.__anglesAtFrame(frame)
         rot = self.__eulerRotationMatrix(angles)
-        print(f"Rotation matrix: {rot}")
-        print(f"Corners (base): {self.__corners_base}")
+        # print(f"Rotation matrix: {rot}")
+        # print(f"Corners (base): {self.__corners_base}")
         self.__corners_current = Matrix(rot.dot(self.__corners_base.getMatrix()))
-        print(f"Corners (rotated): {self.__corners_current}")
+        # print(f"Corners (rotated): {self.__corners_current}")
 
     def setAngles(self, x, y, z):
         angles = Vec3(x, y, z)
@@ -77,7 +84,7 @@ class MohrCube(object):
         return self.__corners_current.getColumn(line[0]).asVector(), self.__corners_current.getColumn(line[1]).asVector()
 
     def __eulerRotationMatrix(self, angles: Vec3):
-        print(f"Angles to rotate by: {angles}")
+        # print(f"Angles to rotate by: {angles}")
         angles = angles * (math.pi / 180.0)
         # https://adipandas.github.io/posts/2020/02/euler-rotation/
         # https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
@@ -86,19 +93,19 @@ class MohrCube(object):
             [0,  math.cos(angles.x), -math.sin(angles.x)],
             [0,  math.sin(angles.x),  math.cos(angles.x)]
         ])
-        print(f"Rx: {rx}")
+        # print(f"Rx: {rx}")
         ry = np.array([
             [ math.cos(angles.y), 0,  math.sin(angles.y)],
             [                 0, 1,                   0],
             [-math.sin(angles.y), 0,  math.cos(angles.y)]
         ])
-        print(f"Ry: {ry}")
+        # print(f"Ry: {ry}")
         rz = np.array([
             [ math.cos(angles.z), -math.sin(angles.z), 0],
             [ math.sin(angles.z),  math.cos(angles.z), 0],
             [                  0,                  0, 1]
         ])
-        print(f"Rz: {rz}")
+        # print(f"Rz: {rz}")
         return rz.dot(ry.dot(rx))
 
     # def rotated_corners(self, euler_angles):
