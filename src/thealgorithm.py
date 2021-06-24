@@ -57,13 +57,26 @@ def __drawCube(cube: MohrCube, side: MohrCube.Side, center_mm: Vec2, size_mm, pd
             p2 *= size_mm * 0.5
             pdf_canvas.line(page.xContent(center_mm.x + p1.x), page.yContent(center_mm.y + p1.y), page.xContent(center_mm.x + p2.x), page.yContent(center_mm.y + p2.y))
 
-def __drawPattern(pattern, x, y, pdf_canvas: canvas.Canvas, page: PdfPage, book: Book):
-    w = 3
-    h = 3
-    pdf_canvas.setFillColor(Color(0,0,0,1))
+def __drawPattern(pattern, x, y, w, dw, h, pdf_canvas: canvas.Canvas, page: PdfPage, book: Book):
+    ps = len(pattern)
+    space = w / ps - dw
     for i in range(len(pattern)):
-        p = pattern[i]
-        pdf_canvas.roundRect(page.xContent(x + (w+1)*i), page.yContent(y), book.px(w), book.px(h), book.px(0.5), 1, 1 if p else 0)
+        p = pattern[-1-i]
+        #pdf_canvas.roundRect(page.xContent(x + (w+1)*i), page.yContent(y), book.px(w), book.px(h), book.px(0.5), 1, 1 if p else 0)
+        pdf_canvas.roundRect(page.xContent(x + (dw+space)*i), page.yContent(y), book.px(dw), book.px(h), book.px(dw*0.25), 1, 1 if p else 0)
+
+def __drawPatterns(patterns, x, y, w, h, pdf_canvas: canvas.Canvas, page: PdfPage, book: Book):
+    ps = len(patterns[0])
+    dw = w / ps
+    dh = h / len(patterns)
+    f = 1.0
+    pdf_canvas.rect(page.xContent(x), page.yContent(y), book.px(w), book.px(h), 1, 0)
+    for i in range(ps):
+        #pdf_canvas.rect(page.xContent(x + dw*i), page.yContent(y), book.px(dw*0.8), book.px(h), 1, 0)
+        for j in range(len(patterns)):
+            p = patterns[j][-1-i]
+            if p:
+                pdf_canvas.rect(page.xContent(x + dw*i), page.yContent(y+dh*j), book.px(dw*f*1.1), book.px(dh*1.1), 0, 1)
 
 def __drawAngles(angles, x, y, pdf_canvas: canvas.Canvas, page: PdfPage, book: Book):
     r = 2
@@ -162,29 +175,24 @@ def cubePage005(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
     cube = MohrCube()
 
     pdf_canvas.setLineWidth(book.px(2.2))
-    pdf_canvas.setStrokeColor(Color(1,0,0,0.3))
     pdf_canvas.setFillColor(Color(0,0,0,data['alpha']))
     s = 40
-    # for x in range(0, 1, 5):
-    #     for y in range(0, 2, 1):
-    #         for z in range(0, 90, 1):
-    #             cube.setAngles(random.randint(0, 359), random.randint(0, 359), random.randint(0, 359))
-    #             for l in [0, 1]:
-    #                 p1, p2 =  cube.getLine(l)
-    #                 p1 *= 40
-    #                 p2 *= 40
-    #                 __drawFilledLine(Vec2(page.xContent(85 + p1.x), page.yContent(70 + p1.y)), Vec2(page.xContent(85 + p2.x), page.yContent(70 + p2.y)), book.px(3), book.px(1.5), pdf_canvas)
 
     v = Vec2(1,0).rotateDegrees(data['angle'])
-    #print(v, (data['frame']['end'] - data['frame']['begin']) * v.y)
+    if 'end' not in data['frame']:
+        data['frame']['end'] = data['frame']['begin'] + int((book.mm(page.content['w'])-2*35)/v.y)
+        print(f"Frame range: {data['frame']['begin']} -- {data['frame']['end']}")
     center = Vec2((book.mm(page.content['w']) - (data['frame']['end'] - data['frame']['begin']) * v.y)/2, 70)
-    #print(center)
     if data['meta']:
-        pdf_canvas.setLineWidth(10)
-    #     pdf_canvas.rect(page.xContent(40-20), page.yContent(70-20), book.px(40*v.x), book.px(40), 1, 0)
+        pdf_canvas.setStrokeColor(Color(1,0,0,1))
+        pdf_canvas.setLineWidth(book.px(0.3))
+        # pdf_canvas.rect(page.xContent(40-20), page.yContent(70-20), book.px(40*v.x), book.px(40), 1, 0)
+    patterns = []
     for f in range(data['frame']['begin'], data['frame']['end']+1, 1):
         cube.setFrame(f)
         pattern = cube.getPattern()
+        if len(patterns) == 0 or pattern != patterns[-1]:
+            patterns.append(pattern)
         for i in range(12):
             if pattern[i] == data['right']:
                 p1, p2 =  cube.getLine(i)
@@ -205,66 +213,116 @@ def cubePage005(pdf_canvas: canvas.Canvas, page: PdfPage, book: Book, data):
                     Vec2(page.xContent(xo + p1.x), page.yContent(center.y + p1.y)),
                     Vec2(page.xContent(xo + p2.x), page.yContent(center.y + p2.y)),
                     book.px(3), book.px(1.5), pdf_canvas)
+    
+    # text
+    pdf_canvas.setFont("AlteHaasGrotesk-Bold", book.px(5))
+    pdf_canvas.setFillColor(Color(0,0,0))
+    pdf_canvas.setStrokeColor(Color(0,0,0))
+    pdf_canvas.setLineWidth(book.px(0.7))
+    cube.setFrame(data['frame']['begin'])
+    cube.setPattern(0)
+    s = 3
+    x = 5
+    y = 190
+    l = 10
+    __drawCube(cube, MohrCube.Side.LEFT, Vec2(x+s, y-s/2), s, pdf_canvas, page, book)
+    pdf_canvas.line(page.xContent(x+s*2+1), page.yContent(y-s/2), page.xContent(x+s*2+1+l), page.yContent(y-s/2))
+    cube.setFrame(data['frame']['end'])
+    cube.setPattern(0)
+    __drawCube(cube, MohrCube.Side.LEFT, Vec2(x+s*2+1+l+1+s, y-s/2), s, pdf_canvas, page, book)
+    x += s*2+1+l+1+s*2+1 + 1
+    pdf_canvas.drawString(page.xContent(x), page.yContent(y), f"/ {data['frame']['begin']:04}")
+    x += 16
+    pdf_canvas.line(page.xContent(x), page.yContent(y-s/2), page.xContent(x+l), page.yContent(y-s/2))
+    x += l + 2
+    pdf_canvas.drawString(page.xContent(x), page.yContent(y), f"{data['frame']['end']} /")
+    x += 17
+    pdf_canvas.setLineWidth(book.px(0.5))
+    #__drawPatterns(patterns, 0, 170, 50, 10, pdf_canvas, page, book)
+    __drawPattern(patterns[0], x, y-s, 32, 1.5, s, pdf_canvas, page, book)
+    x += 33
+    pdf_canvas.line(page.xContent(x), page.yContent(y-s/2), page.xContent(x+l), page.yContent(y-s/2))
+    x += l + 2
+    __drawPattern(patterns[-1], x, y-s, 32, 1.5, s, pdf_canvas, page, book)
+    x += 34
+    pdf_canvas.drawString(page.xContent(x), page.yContent(y), f"/ {data['angle']}°")
+
+    # for i in range(7):
+    #     cube.setPattern(i)
+    #     __drawPattern(cube.getPattern(), 80, 100+i*7, 32, 1.5, s, pdf_canvas, page, book)
 
 if __name__ == '__main__':
     book = Book(200, 220, 300)
 
-    book.addPage(PdfPage('default', {
-            'frame': '../original_frames/frame_0000.jpg',
-            'text': "En text till olles bok."
-        }, testPage), number=None)
+    # book.addPage(PdfPage('default', {
+    #         'frame': '../original_frames/frame_0000.jpg',
+    #         'text': "En text till olles bok."
+    #     }, testPage), number=None)
 
-    book.addPage(PdfPage('default', {
-            'angles': (34, 88, 25),
-            'pattern': 2345
-        }, cubePage001), number=None)
+    # book.addPage(PdfPage('default', {
+    #         'angles': (34, 88, 25),
+    #         'pattern': 2345
+    #     }, cubePage001), number=None)
 
-    book.addPage(PdfPage('default', {
-        }, cubePage002), number=None)
+    # book.addPage(PdfPage('default', {
+    #     }, cubePage002), number=None)
 
-    book.addPage(PdfPage('default', {
-        }, cubePage003), number=None)
+    # book.addPage(PdfPage('default', {
+    #     }, cubePage003), number=None)
 
-    book.addPage(PdfPage('default', {
-        }, cubePage004), number=None)
+    # book.addPage(PdfPage('default', {
+    #     }, cubePage004), number=None)
 
-    book.addPage(PdfPage('default', {
-            'angle': 0,
-            'alpha': 0.01,
-            'right': True,
-            'frame': {
-                'begin': 518,
-                'end': 1200
-            },
-            'meta': False
-        }, cubePage005), number=None)
+    # book.addPage(PdfPage('default', {
+    #         'angle': 0,
+    #         'alpha': 0.01,
+    #         'right': True,
+    #         'frame': {
+    #             'begin': 518,
+    #             'end': 1200
+    #         },
+    #         'meta': False
+    #     }, cubePage005), number=None)
 
-    book.addPage(PdfPage('default', {
-            'angle': 10,
-            'alpha': 0.1,
-            'right': True,
-            'frame': {
-                'begin': 518,
-                'end': 1100
-            },
-            'meta': True
-        }, cubePage005), number=None)
+    # book.addPage(PdfPage('default', {
+    #         'angle': 10,
+    #         'alpha': 0.015,
+    #         'right': True,
+    #         'frame': {
+    #             'begin': 518,
+    #             'end': 1100
+    #         },
+    #         'meta': True
+    #     }, cubePage005), number=None)
 
-    book.addPage(PdfPage('default', {
-            'angle': 10,
-            'alpha': 0.015,
-            'right': False,
-            'frame': {
-                'begin': 1100,
-                'end': 1700
-            },
-            'meta': False
-        }, cubePage005), number=None)
+    # book.addPage(PdfPage('default', {
+    #         'angle': 10,
+    #         'alpha': 0.015,
+    #         'right': False,
+    #         'frame': {
+    #             'begin': 1100,
+    #             'end': 1700
+    #         },
+    #         'meta': False
+    #     }, cubePage005), number=None)
+
+    for i in range(1):
+        f = int(random.uniform(518, 3630))
+        book.addPage(PdfPage('default', {
+                'angle': 10,
+                'alpha': 0.03,
+                'right': True,
+                'frame': {
+                    'begin': f
+                },
+                'meta': False
+            }, cubePage005), number=None)
 
     book.update()
     print(book)
     renderer = PdfRenderer()
     renderer.addFont('AlteHaasGrotesk', 'data/AlteHaasGroteskRegular.ttf')
+    renderer.addFont('AlteHaasGrotesk-Bold', 'data/AlteHaasGroteskBold.ttf')
     #renderer.renderTemplate(book, 'default')
     for page in book.pages:
         renderer.renderPage(page, 'output/essvik', PdfRenderer.OutputType.PDF, True)
