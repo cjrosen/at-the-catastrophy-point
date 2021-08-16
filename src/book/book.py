@@ -119,6 +119,9 @@ class BookPage(object):
         return self.content['y'] + self.book.px(y_mm)
         #return self.content['y'] + self.content['h'] + self.book.px(y_mm)
 
+    def widthContent(self):
+        return self.content['w']
+
     def update(self):
         page_template = self.book.getPageTemplate(self.template_id)
         self.header = {

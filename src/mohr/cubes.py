@@ -45,6 +45,11 @@ class MohrCube(object):
             2, 1, 0, 3, 11, 7, 6, 5, 8, 10, 9, 4
         ]
 
+    def clampFrame(self, frame):
+        while frame > (3720 + 518):
+            frame = frame - (3720 + 35)
+        return frame
+
     def setFrame(self, frame):
         self.frame = frame
         self.segment = self.__segmentForFrame(frame)
