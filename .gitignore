@@ -152,3 +152,5 @@ fabric.properties
 
 data/
 output/
+
+.DS_Store
