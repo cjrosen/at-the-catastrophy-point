@@ -1,4 +1,2 @@
 numpy
-svglib
-python-opencv
-reportlab
+reportlab==3.5.68
