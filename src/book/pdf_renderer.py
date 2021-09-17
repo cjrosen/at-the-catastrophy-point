@@ -1,4 +1,5 @@
 import reportlab
+from reportlab.graphics.shapes import Drawing
 from book import Book, BookPage
 import math
 from reportlab.pdfgen import canvas
@@ -100,7 +101,7 @@ class PdfRenderer(object):
     def renderPage(self, page: PdfPage, output_path, outputType: OutputType, render_meta = False):
         
         book = page.book
-        filename = f"{output_path}/page_{page.number}.pdf"
+        filename = f"{output_path}/{page.number:04}.pdf"
         c = canvas.Canvas(filename, (book.width_px, book.height_px), 0)
 
         # https://github.com/source-foundry/font-line
@@ -131,8 +132,10 @@ class PdfRenderer(object):
             print(f"Save template rendering to {filename}, as {outputType}")
             if outputType is self.OutputType.PDF:
                 c.save()
-            # elif outputType is OutputType.TIFF:
-            #     renderPM.drawToFile(c, filename, 'TIFF')
+            #elif outputType in [self.OutputType.TIFF, self.OutputType.PNG]:
+            #    filename = filename.rstrip("pdf") + outputType.name.lower()
+            #    print(f"Save file as '{filename}'")
+            #    renderPM.drawToFile(c, filename, outputType.name)
             else:
                 print(f"Unknown output type: {outputType}")
         except IOError as ioe:

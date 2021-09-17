@@ -1,5 +1,6 @@
 
 from hashlib import pbkdf2_hmac
+from typing import Collection
 from book import Book, PdfRenderer, PdfPage
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import Color
@@ -11,6 +12,7 @@ from mohr import Vec3, Vec2
 
 import math
 import random
+import collections
 
 def __clearPen(pdf_canvas: canvas.Canvas):
     pdf_canvas.setStrokeColor(Color(0,0,0))
@@ -299,10 +301,18 @@ def drawText(pdf_canvas: canvas.Canvas, cube: MohrCube, patterns, data):
 
 
 if __name__ == '__main__':
-    book = Book(200, 220, 300)
+    book = Book(200, 220, 72)
 
-    angles = [0, 0, 0, 4, 8, 8, 10, 16, 16, 30]
-    random.shuffle(angles)
+    #angles = [0, 0, 0, 4, 8, 8, 10, 16, 16, 30]
+    n = 400
+    angles = [0] * n + [4] * n + [8] * n + [10] * n + [16] * n + [30] * n
+
+    print(f"Will generate {len(angles)} images")
+    count = collections.Counter(angles)
+    for angle in count:
+        print(f"  {angle:2}°: {count[angle]} pages")
+    
+    #random.shuffle(angles)
     for angle in angles:
         f = int(random.uniform(518, 4000))
         angle = angle
@@ -399,6 +409,6 @@ if __name__ == '__main__':
     renderer.addFont('AlteHaasGrotesk-Bold', 'data/AlteHaasGroteskBold.ttf')
     #renderer.renderTemplate(book, 'default')
     for page in book.pages:
-        renderer.renderPage(page, 'output/essvik', PdfRenderer.OutputType.PDF, False)
+        renderer.renderPage(page, 'output/pdf', PdfRenderer.OutputType.PDF, False)
 
     print("main done")
