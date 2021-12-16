@@ -1,10 +1,19 @@
-# At the Catastrophy-Point & The computer as seen at the end of the human age
-Complementary code to book [At the Catastrophy-Point](http://carljohanrosen.com#catastrophy). This code was written for [Olle Essvik's](https://www.jimpalt.org/) book *The computer as seen at the end of the human age* to be published early 2022. It generates images to be part of that publication.
+# At the Catastrophy-Point
+Code following up on the book [At the Catastrophy-Point](http://carljohanrosen.com#catastrophy). 
 
-## Introduction
-There is a point, at which the illusion of a structured geometrical shape dissolves into something else. The artist Manfred Mohr refers to this point using a term taken from mathematics: the catastrophy-point. In 1974, Mohr explored the limits of the cube, which resulted in a series of works. One of these works — a film of two cubes rotating — was my main object of study a few years back. I sought a path from the video surface, through an algorithm, towards the code that created the cubes and their movements. I believe I've found the algorithm (but not the code) and my process is documented in a book called: *At the Catastrophy-Point: The analytical observer's notes on Complementary Cubes*.
+## The computer as seen at the end of the human age
+Some of this code was written for [Olle Essvik's](https://www.jimpalt.org/) book *The computer as seen at the end of the human age*, to be published early 2022. It generates images to be part of that publication.
 
-The renderings presented in this book represent segments of this algorithm, where multiple cubes are overlaid and viewed from different angles around the vertical axis. I would argue they are beyond the catastrophy-point of the cube, as the renderings have predominantly picked up a curvature foreign to the aesthetics of the cube, but much more aligned to that of rotation.
+There is a point, at which the illusion of a structured geometrical shape dissolves into something else. The artist Manfred Mohr refers to this point using a term taken from mathematics: the catastrophy-point. In 1974, Mohr explored the limits of the cube, which resulted in a series of works. One of these works — a film of two cubes rotating — was my main object of study for quite some time. I sought a path from the video surface, through an algorithm, towards the code that created the cubes and their movements. I believe I've found the algorithm (but not the code) and my process is documented in a book called: *At the Catastrophy-Point: The analytical observer's notes on Complementary Cubes*.
+
+The renderings presented in this book represent this algorithm in segments, where multiple cubes are overlaid and viewed from fixed angles around the vertical axis. I would argue they are beyond the catastrophy-point of the cube, as the renderings have predominantly picked up a curvature foreign to the aesthetics of the cube, but much more aligned to that of rotation. It is, however, just as true to and dependent on the algorithm that Mohr designed.
+
+This simple algorithm shapes the world alongside other algorithms. The point where algorithms allowed themselves to be deconstructed, reverse-engineered and reconfigured based solely on their output might already be passed. If there was ever such a point.
+
+The complete algorithm and the code written to create these images can be found in this repo.
+
+## The algorithm
+This repo contains the algorithm discovered through the research process documented in *At the Catastrophy-Point: The analytical observer's notes on Complementary Cubes* (2016)
 
 The algorithm to rotate the cubes can be python-coded like this:
 
@@ -13,11 +22,11 @@ The algorithm to rotate the cubes can be python-coded like this:
 	y = 30 * math.sin((2 * f - 16) * r)
 	z = 83 * math.sin((f - 8) * r) + 7 * math.sin((3 * f + 156) * r) - (f - 518)
 
-where `f` is a frame number. The complete algorithm and the code written to create these images can be found through [carljohanrosen.com#catastrophy](https://carljohanrosen.com#catastrophy).
+where `f` is a frame number. For the complete algorithm, have a look at [cubes.py](https://github.com/cjrosen/at-the-catastrophy-point/blob/main/src/mohr/cubes.py)
 
 ## Execute
-To generate some content similar to what will be published in the book, initate a virtual environment (if you want) and run:
+To generate some content similar to what will be published in *The computer as seen at the end of the human age*, initate a virtual environment (if it suits you) and run:
 
-	python thealgorithm.py
+	python endofhuman.py
 
 Pdf's will now be generated to the `./output` folder.
