@@ -1,4 +1,4 @@
-import cv2
+import cv2 # install manually if needed --> https://pypi.org/project/opencv-python/
 
 def extractFrames(movie_path, output_path, frames):
     vidcap = cv2.VideoCapture(movie_path)

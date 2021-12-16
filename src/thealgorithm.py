@@ -1,5 +1,4 @@
 
-from hashlib import pbkdf2_hmac
 from typing import Collection
 from book import Book, PdfRenderer, PdfPage
 from reportlab.pdfgen import canvas
@@ -303,9 +302,9 @@ def drawText(pdf_canvas: canvas.Canvas, cube: MohrCube, patterns, data):
 if __name__ == '__main__':
     book = Book(200, 220, 72)
 
-    #angles = [0, 0, 0, 4, 8, 8, 10, 16, 16, 30]
-    n = 400
-    angles = [0] * n + [4] * n + [8] * n + [10] * n + [16] * n + [30] * n
+    angles = [8]
+    #n = 400
+    #angles = [0] * n + [4] * n + [8] * n + [10] * n + [16] * n + [30] * n
 
     print(f"Will generate {len(angles)} images")
     count = collections.Counter(angles)

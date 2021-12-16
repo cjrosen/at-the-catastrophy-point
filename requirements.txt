@@ -1,2 +1,4 @@
 numpy
 reportlab==3.5.68
+pdf2image
+# opencv-python # heavy, and not really necessary

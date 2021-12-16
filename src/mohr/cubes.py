@@ -1,5 +1,6 @@
 import math
 import numpy as np
+
 from .vector import Vec3, Matrix
 from enum import Enum
 

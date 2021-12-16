@@ -6,14 +6,10 @@ ENV_NAME="mohr"
 conda create --name $ENV_NAME python==3.8
 conda activate $ENV_NAME
 
-# Pdf2Image
-conda install poppler
-pip install pdf2image
 
-pip install numpy
+conda install poppler # for https://pypi.org/project/pdf2image/
 
-# Reportlab, version supported by High Sierra
-pip install reportlab==3.5.68
+pip install -r requirements.txt
 
 #pip install --editable .
 

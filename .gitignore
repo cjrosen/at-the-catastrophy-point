@@ -150,7 +150,8 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-data/
+data/*
+!data/*.ttf
 output/
 
 .DS_Store
