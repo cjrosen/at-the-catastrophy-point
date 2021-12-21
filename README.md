@@ -12,6 +12,13 @@ This simple algorithm shapes the world alongside other algorithms. The point whe
 
 The complete algorithm and the code written to create these images can be found in this repo.
 
+### Execute
+To generate some content similar to what will be published in *The computer as seen at the end of the human age*, initate a virtual environment (if it suits you) and run:
+
+	python endofhuman.py
+
+Pdf's will now be generated to the `./output` folder.
+
 ## The algorithm
 This repo contains the algorithm discovered through the research process documented in *At the Catastrophy-Point: The analytical observer's notes on Complementary Cubes* (2016)
 
@@ -23,10 +30,3 @@ The algorithm to rotate the cubes can be python-coded like this:
 	z = 83 * math.sin((f - 8) * r) + 7 * math.sin((3 * f + 156) * r) - (f - 518)
 
 where `f` is a frame number. For the complete algorithm, have a look at [cubes.py](https://github.com/cjrosen/at-the-catastrophy-point/blob/main/src/mohr/cubes.py)
-
-## Execute
-To generate some content similar to what will be published in *The computer as seen at the end of the human age*, initate a virtual environment (if it suits you) and run:
-
-	python endofhuman.py
-
-Pdf's will now be generated to the `./output` folder.
